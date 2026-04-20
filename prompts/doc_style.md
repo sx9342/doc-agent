@@ -26,7 +26,6 @@ createTime: 2026/04/20 12:00:00
 ## 标题层级
 - H1 不出现在正文（由 frontmatter title 替代）
 - 从 H2 开始，最深到 H4
-
 ## 自定义容器语法
 ```
 ::: tip 提示标题
@@ -47,21 +46,77 @@ createTime: 2026/04/20 12:00:00
 ```
 
 ## 代码块规范
-- 必须标注语言
-- 重点行用 `[!code highlight]`
-- 新增行用 `[!code ++]`，删除行用 `[!code --]`
 
-示例：
-```ts
-const count = ref(0) // [!code highlight]
-const double = computed(() => count.value * 2) // [!code ++]
+### 基础要求
+- 必须标注语言
+
+### 代码块标题 `v1.0.0-rc.136+`
+在 ` ``` [lang] ` 之后添加 `title="xxxx"` 为代码块添加标题：
+```ts title="example.ts"
+const count = ref(0)
 ```
+
+### 行号控制
+- 默认显示行号，可用 `:line-numbers` / `:no-line-numbers` 控制单个代码块
+- `:line-numbers=2` 自定义起始行号
+
+### 行高亮
+两种方式：
+- 语言后跟 `{行号}` ，如 ` ```js{1,4,6-8} `
+- 行内注释 `// [!code highlight]`
+
+### 聚焦
+- `// [!code focus]` 聚焦当前行，其余模糊
+- `// [!code focus:<lines>]` 聚焦多行
+- bash 中用 `# [!code focus]`
+
+### Diff 差异
+- `// [!code ++]` 新增行
+- `// [!code --]` 删除行
+- bash 中用 `# [!code ++]` / `# [!code --]`
+
+### 错误与警告着色
+- `// [!code error]` 错误行
+- `// [!code warning]` 警告行
+- bash 中用 `# [!code warning]` 等
+
+### 词高亮
+- `// [!code word:Hello]` 高亮所有匹配词
+- `// [!code word:options:2]` 仅高亮前 2 处
+- bash 中用 `# [!code word:hello]`
+
+### 空白符可视化
+- `:whitespace` 显示行首空白
+- `:whitespace=all` 显示所有空白
+- 全局启用后用 `:no-whitespace` 单独禁用
+
+### 折叠代码块
+- `:collapsed-lines` 默认从第 15 行折叠
+- `:collapsed-lines=10` 自定义起始折叠行
+- 全局启用后用 `:no-collapsed-lines` 单独禁用
+
+### 代码组（Code Tabs）
+```md
+::: code-tabs
+@tab config.js
+\`\`\`js
+// js 内容
+\`\`\`
+
+@tab:active config.ts
+\`\`\`ts
+// ts 内容（默认激活）
+\`\`\`
+:::
+```
+- `@tab:active` 设置默认激活标签
+- 标签名匹配主流技术栈时自动显示图标（`v1.0.0-rc.103+`）
 
 ## 写作风格
 - 技术文档：准确、简洁，避免废话
 - 教程类：步骤清晰，每步有明确产出
 - 正文适当使用 Badge 和 Icon 组件增强可读性
-
+- 每节结束后不要用"---"，用空行隔开
 ## 教程专项规范
 
 ### 语气与表达
@@ -87,5 +142,6 @@ const double = computed(() => count.value * 2) // [!code ++]
 - 每完成一个阶段性目标，用 ::: tip 给读者一个正向反馈，例如"做到这里，你已经部署了第一个合约！"
 
 ## 工具调用规则
-生成文档后，必须调用 write_file 将内容保存为 .md 文件。
+**严格要求**：每次生成文档内容后，必须立即调用 `write_file` 工具将完整内容写入 .md 文件，禁止仅在对话中输出文本而不写文件。
 文件名格式：{slug}.md
+若未调用 write_file，视为任务未完成。

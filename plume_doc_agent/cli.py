@@ -1,4 +1,7 @@
 import argparse
+import os
+import re
+from pathlib import Path
 from dotenv import load_dotenv
 from rich.console import Console
 from plume_doc_agent.agent import create_agent
@@ -34,7 +37,14 @@ def main():
     if args.chat or not args.task:
         chat_loop(agent)
     else:
-        agent.print_response(args.task, stream=True)
+        response = agent.run(args.task)
+        content = response.content if hasattr(response, "content") else str(response)
+        slug = re.sub(r"[^\w\u4e00-\u9fff]+", "-", args.task[:40]).strip("-")
+        out = Path(os.getenv("OUTPUT_DIR", "./output"))
+        out.mkdir(parents=True, exist_ok=True)
+        filepath = out / f"{slug}.md"
+        filepath.write_text(content, encoding="utf-8")
+        console.print(f"[green]已写入：{filepath.resolve()}[/]")
 
 if __name__ == "__main__":
     main()
